@@ -24,6 +24,7 @@
 # define ITALIC "\x1b[3m"
 # define UNDERLINE "\x1b[4m"
 
+
 typedef struct s_env
 {
 	char			*var;
@@ -147,7 +148,7 @@ void	fetsh_files(t_expand *params, t_wildcard *specs);
 void	expand_wildcards(t_expand *params, int quotes, int dquotes);
 //end of parser functions
 
-// env function 
+// env and builtin function 
 t_env	*create_env(char **env);
 t_env	*new_env(char *s);
 void	add_env(t_env **env, t_env *new_env);
@@ -157,6 +158,12 @@ char	*get_val(char *s);
 char	*get_var(char *s);
 void	export_f(t_env **env_l, char **env);
 void	unset_f(t_env **env_l, char **env);
-void	env_f(t_env *env);
-//end of env funcion
+void	env_f(t_env *env, int flag);
+int		set_env(char *var, char *val, t_env **env);
+char	*get_env(char *name, t_env *env);
+void	echo_f(char **args);
+int		cd_f(char **path, t_env **env);
+int		pwd_f(void);
+//end of env and builtin funcion
+
 #endif

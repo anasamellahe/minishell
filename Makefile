@@ -5,8 +5,8 @@ CFLAGS = -Wall -Werror -Wextra
 # Source files
 SRCS =	LEXER/lexer.c LEXER/node.c LEXER/utils.c\
         PARSER/parser.c PARSER/expand.c PARSER/expand_utils.c PARSER/parser_utils.c PARSER/wildcard_utils.c PARSER/wildcard.c\
-        ENV/env_node.c ENV/env.c ENV/utils.c main.c
-
+		BUILTIN/cd_f.c BUILTIN/echo_f.c BUILTIN/env_f.c BUILTIN/env_node.c BUILTIN/pwd_f.c BUILTIN/export_f.c BUILTIN/unset_f.c BUILTIN/utils.c BUILTIN/utils1.c\
+		main.c
 # Object files
 OBJS = $(SRCS:.c=.o)
 

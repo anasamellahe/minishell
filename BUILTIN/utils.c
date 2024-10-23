@@ -48,3 +48,21 @@ char *get_var(char *s)
 	}
 	return (NULL);
 }
+
+int set_env(char *var, char *val, t_env **env)
+{
+	t_env	*tmp;
+
+	tmp = *env;
+	while (tmp)
+	{
+		if (ft_strncmp(var, tmp->var, ft_strlen(var)) == 0)
+		{
+			free(tmp->val);
+			tmp->val = ft_strdup(val);
+			return (0);
+		}
+		tmp = tmp->next;
+	}
+	return (1);
+}

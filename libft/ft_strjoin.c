@@ -12,13 +12,6 @@
 
 #include "libft.h"
 
-static void	ft_free(char *var)
-{
-	if (var)
-		free(var);
-	var = NULL;
-}
-
 char	*ft_strjoin(char const *s1, char const *s2)
 {
 	char	*ptr;
@@ -43,6 +36,5 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	if (s2)
 		ft_memcpy((ptr + len), s2, len1);
 	ptr[len + len1] = '\0';
-	ft_free((char *)s1);
 	return (ptr);
 }

@@ -7,24 +7,32 @@ int main (int ac, char **av, char **ev)
     (void)ac;
     (void)av;
     env = create_env(ev);
-    char buff[MAX_BUFF];
-    getcwd(buff, MAX_BUFF);
-    printf("%s\n", buff);
     while(1)
     {
-        char *input = readline("minishell$ ");
+        char *cwd = ft_strjoin (get_env("PWD", env), "$ ");
+        char *input = readline(cwd);
         list = lexer(input);
         parser(list);
-        if (!strncmp(list->data.cmd.cmd, "env", ft_strlen("env")))
-            env_f(env);
-        else if (!strncmp(list->data.cmd.cmd, "export", ft_strlen("export")))
+        if(!list)
+            continue;
+        if (!strcmp(list->data.cmd.cmd, "env"))
+            env_f(env, 0);
+        else if (!strcmp(list->data.cmd.cmd, "export"))
             export_f(&env, list->data.cmd.args);
-        else if (!strncmp(list->data.cmd.cmd, "unset", ft_strlen("unset")))
+        else if (!strcmp(list->data.cmd.cmd, "unset"))
             unset_f(&env, list->data.cmd.args);
-        else if (!strncmp(list->data.cmd.cmd, "exit", ft_strlen("exit")))
+        else if (!strcmp(list->data.cmd.cmd, "echo"))
+            echo_f(list->data.cmd.args);
+        else if (!strcmp(list->data.cmd.cmd, "exit"))
             break;
+        else if (!strcmp(list->data.cmd.cmd, "cd"))
+            cd_f(list->data.cmd.args, &env);
+        else if (!strcmp(list->data.cmd.cmd, "pwd"))
+            pwd_f();
         else
-            printf("Command not found\n");
+            print_list(list);
+        free(input);
+        free(cwd);
     }
     
   
