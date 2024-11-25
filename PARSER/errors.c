@@ -1,28 +1,13 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   unset_f.c                                          :+:      :+:    :+:   */
+/*   errors.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: marvin <marvin@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 22:45:08 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/22 22:48:03 by anamella         ###   ########.fr       */
+/*   Created: 2024/10/27 05:05:39 by marvin            #+#    #+#             */
+/*   Updated: 2024/10/27 05:07:12 by marvin           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
-
-int	unset_f(char **env, t_mini *mini)
-{
-	int		i;
-	t_env	**env_l;
-
-	i = 0;
-	env_l = &mini->env;
-	while (env && env[i])
-	{
-		del_env(env_l, env[i]);
-		i++;
-	}
-	return (0);
-}

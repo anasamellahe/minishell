@@ -1,160 +1,228 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/08/16 20:05:20 by aderraj           #+#    #+#             */
+/*   Updated: 2024/11/24 00:33:52 by anamella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-int get_args_count(t_list *list)
+t_list	*get_args(t_list *list, t_cmd *data, int size)
 {
-    int i;
-    t_list *tmp;
+	int		i;
+	t_list	*tmp;
 
-    i = 0;
-    tmp = list;
-    while (tmp && tmp->type == WORD)
-    {
-        i++;
-        tmp = tmp->next;
-    }
-    return (i);
+	i = 1;
+	while (list && list->type == WORD)
+	{
+		expand_rm_quotes(list, list->s);
+		if (list->s && data->args)
+			data->args = extend_array(data->args, list->s, i++, &size);
+		tmp = list;
+		list = list->next;
+		free(tmp->s);
+		free(tmp);
+	}
+	return (list);
 }
 
-t_list    *get_args(t_list *list, u_token_data *data)
+void	merge_words(t_list *list, t_redir *redirs)
 {
-    int i;
-    t_list *tmp;
+	int	size;
 
-    i = 0;
-    while (list && list->type == WORD)
-    {
-        list->s = expand_rm_quotes(list->s);
-        tmp = list;
-        data->cmd.args[i] = ft_strdup(list->s);
-        list = list->next;
-        free(tmp->s);
-        free(tmp);
-        i++;
-    }
-    data->cmd.args[i] = NULL;
-    return (list);
+	if (list->type == WORD)
+		expand_rm_quotes(list, list->s);
+	size = get_args_count(list);
+	if (size)
+	{
+		list->data.args = ft_calloc(size + 1, sizeof(char *));
+		if (!list->data.args)
+			return ;
+	}
+	if (list->s && size)
+	{
+		list->data.cmd = ft_strdup(list->s);
+		list->data.args[0] = ft_strdup(list->data.cmd);
+		if (!list->data.cmd)
+			return ;
+	}
+	list->data.redirections = redirs;
+	list->type = CMD;
+	list->next = get_args(list->next, &list->data, size);
 }
 
-void    merge_nodes(t_list *list, t_redir *redirs)
+t_list	*add_redir_node(t_redir **redirections, t_list *list)
 {
-    int size;
+	t_redir	*new;
+	t_list	*tmp;
 
-    list->s = expand_rm_quotes(list->s);
-    size = get_args_count(list);
-    list->data.cmd.args = malloc(sizeof(char *) * (size));
-    list->data.cmd.redirections = redirs;
-    if (!list->data.cmd.args)
-        return ;
-    list->data.cmd.cmd = ft_strdup(list->s);
-    if (!list->data.cmd.cmd)
-    {
-        free(list->data.cmd.args);
-        return ;   
-    }
-    list->type = CMD;
-    list->next = get_args(list->next, &list->data);
+	tmp = NULL;
+	if (!list->next || list->next->type != WORD)
+		return (list->next);
+	new = malloc(sizeof(t_redir));
+	if (!new)
+		return (NULL);
+	new->mode = list->type;
+	new->next = NULL;
+	tmp = list->next->next;
+	new->file = ft_strdup(list->next->s);
+	free(list->next->s);
+	free(list->next);
+	list->next = NULL;
+	append_redirection(redirections, new);
+	return (tmp);
 }
 
-t_list *add_redir_node(t_redir **redirections, t_list *list)
+t_list	*get_redirections(t_list *list, t_list *current, t_redir **redirect)
 {
-    t_redir *new;
-    t_list *tmp;
+	t_list	*replace;
 
-    new = malloc(sizeof(t_redir));
-    if (!new)
-        return (NULL);
-    new->mode = list->type;
-    tmp = NULL;
-    new->next = NULL;
-    if (list->next && list->next->type == WORD)
-    {
-        tmp = list->next->next;
-        new->file = ft_strdup(list->next->s);
-        free(list->next->s);
-        free(list->next);
-    }
-    while ((*redirections) && (*redirections)->next)
-        *redirections = (*redirections)->next;
-    if (*redirections)
-        (*redirections)->next = new;
-    else
-        *redirections = new;
-    return (tmp);
+	replace = current;
+	while (list && list->type != PIPE && list->type != PARENTHESIS
+		&& list->type != AND && list->type != OR)
+	{
+		if (list && (list->type == REDIRIN || list->type == REDIROUT
+				|| list->type == APPEND || list->type == HEREDOC))
+		{
+			if (list->type != HEREDOC && list->next)
+				expand_rm_quotes(list->next, list->next->s);
+			if (list->next == current)
+			{
+				replace = add_redir_node(redirect, list);
+				if (!replace)
+					return (list);
+				list->next = replace;
+			}
+			else
+				list->next = add_redir_node(redirect, list);
+		}
+		list = list->next;
+	}
+	return (replace);
 }
 
-t_list    *get_redirections(t_list *list, t_list *current, t_redir **redirect)
+void	parser(t_list *list)
 {
-    t_list *replace;
+	t_list	*tmp[3];
+	t_redir	*redirections;
 
-    replace = current;
-    while (list && list->type != PIPE && list->type != PARENTHESIS
-        && list->type != AND && list->type != OR)
-    {
-        if (list && (list->type == REDIRIN || list->type == REDIROUT
-            || list->type == APPEND || list->type == HEREDOC))
-        {
-            if (list && list->next == current)
-            {
-                replace = add_redir_node(redirect, list);
-                list->next = replace;
-            }
-            else
-                list->next = add_redir_node(redirect, list);
-        }
-        list = list->next;
-    }
-    return (replace);
+	tmp[0] = list;
+	redirections = NULL;
+	tmp[1] = list;
+	tmp[2] = NULL;
+	while (tmp[0])
+	{
+		arrange_nodes(tmp, &redirections);
+		if (tmp[0])
+			tmp[0] = tmp[0]->next;
+	}
+}
+/**
+void	print_list(t_list *list)
+{
+	for (t_list *tmp = list; tmp; tmp = tmp->next)
+	{
+		printf("node -> {type = [%d], s = [%s]}\n", tmp->type, tmp->s);
+		if (tmp->data.cmd)
+			printf("       data -> cmd = [%s]\n", tmp->data.cmd);
+		for (int i = 0; tmp->data.args && tmp->data.args[i]; i++)
+			printf("       data -> cmd.args = [%s]\n", tmp->data.args[i]);
+		for (t_redir *tmp2 = tmp->data.redirections; tmp2; tmp2 = tmp2->next)
+			printf("       data\
+				-> cmd.redirections = {mode = [%d],file = [%s]}\n", tmp2->mode,
+				tmp2->file);
+		if (tmp->sub_list)
+		{
+			printf(GREEN "---SUB_list\n" RESET);
+			print_list(tmp->sub_list);
+			printf(GREEN "---END OF SUB_list\n" RESET);
+		}
+	}
+}
+void	print_ast(t_tree *node, int level)
+{
+	if (!node)
+		return ;
+	// Print indentation based on the level of the node in the tree
+	for (int i = 0; i < level; i++)
+	{
+		printf("    ");
+	}
+	switch (node->type)
+	{
+	case CMD:
+		printf("CMD: %s", node->data.cmd);
+		if (node->data.cmd && node->data.args)
+		{
+			printf(" args: ");
+			for (int i = 0; node->data.args[i]; i++)
+				printf("[%s] ", node->data.args[i]);
+		}
+		if (node->data.redirections)
+		{
+			for (t_redir *tmp2 = node->data.redirections; tmp2;\
+			tmp2 = tmp2->next)
+				printf(" redirections = {mode = [%d], file = [%s]\n",
+					tmp2->mode, tmp2->file);
+		}
+		printf("\n");
+		break ;
+	case PIPE:
+		printf("PIPE\n");
+		break ;
+	case AND:
+		printf("AND\n");
+		break ;
+	case OR:
+		printf("OR\n");
+		break ;
+	case PARENTHESIS:
+		printf("PARENTHESIS\n");
+		printf("SUB tree inside parentheses: \n");
+		// Print the sub-tree inside the parentheses
+		print_ast(node->sub_tree, level + 1);
+		for (t_redir *tmp2 = node->data.redirections; tmp2;\
+			tmp2 = tmp2->next)
+				printf(" redirections = {mode = [%d], file = [%s]\n",
+					tmp2->mode, tmp2->file);
+		printf("END OF SUB tree inside parentheses:\n");
+		return ;
+	default:
+		printf("Unknown node type\n");
+	}
+	// Recursively print left and right children
+	if (node->left)
+	{
+		printf(GREEN "  left level = %d\n" RESET, level);
+		print_ast(node->left, level + 1);
+	}
+	if (node->right)
+	{
+		printf(GREEN "  right level = %d\n" RESET, level);
+		print_ast(node->right, level + 1);
+	}
 }
 
-void    parser(t_list *list)
+int	main(void)
 {
-    t_list *tmp;
-    t_redir *redirections;
-    t_list *start;
+	char	*buf;
+	t_list	*list;
+	t_tree	*root;
 
-    tmp = list;
-    redirections = NULL;
-    start = tmp;
-    while (tmp)
-    {
-        if (tmp && tmp->type == WORD)
-        {
-            tmp = get_redirections(start, tmp, &redirections);
-            merge_nodes(tmp, redirections);
-            redirections = NULL;
-        }
-        else if (tmp && tmp->type == PARENTHESIS)
-        {
-            tmp->sub_list = lexer(&tmp->s[1]);
-            parser(tmp->sub_list);
-        }
-        else if (tmp->type == PIPE || tmp->type == AND || tmp->type == OR)
-            start = tmp->next;
-        if (tmp)
-            tmp = tmp->next;
-    }
+	buf = readline(BLUE "$$:" RESET);
+	list = lexer(buf);
+	parser(list);
+	// print_list(list);
+	root = convert_to_ast(list);
+	print_ast(root, 0);
+	free_list(list);
+	free_tree(root);
+	free(buf);
+	return (0);
 }
-
-void    print_list(t_list *list)
-{
-    for (t_list *tmp = list; tmp; tmp = tmp->next)
-    {
-        printf("node -> {type = [%d], s = [%s]}\n", tmp->type, tmp->s);
-        if (tmp->data.cmd.cmd)
-            printf("       data -> cmd = [%s]\n", tmp->data.cmd.cmd);
-        for (int i = 0; tmp->data.cmd.args && tmp->data.cmd.args[i]; i++)
-            printf("       data -> cmd.args = [%s]\n", tmp->data.cmd.args[i]);
-        for (t_redir *tmp2 = tmp->data.cmd.redirections; tmp2; tmp2 = tmp2->next)
-        {
-            printf("       data -> cmd.redirections = {mode = [%d], file = [%s]\n",\
-            tmp2->mode, tmp2->file);
-        }
-        if (tmp->sub_list)
-        {
-            printf(GREEN"---SUB_list\n"RESET);
-            print_list(tmp->sub_list);
-            printf(GREEN"---END OF SUB_list\n"RESET);
-        }
-    }
-}
+// **/

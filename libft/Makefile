@@ -33,6 +33,7 @@ SRC = 	ft_atoi.c\
 		ft_substr.c\
 		ft_tolower.c\
 		ft_toupper.c\
+		ft_strncpy.c\
 
 SRC_B = ft_lstsize_bonus.c\
 		ft_lstnew_bonus.c \

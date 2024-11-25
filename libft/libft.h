@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.42.fr>          +#+  +:+       +#+        */
+/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/11/14 23:25:50 by anamella          #+#    #+#             */
-/*   Updated: 2024/05/12 19:53:43 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/22 22:54:56 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,6 @@
 # include <limits.h>
 # include <string.h>
 # include <ctype.h>
-
 
 size_t				ft_strlen(const char *s);
 void				ft_bzero(void *s, size_t n);
@@ -56,5 +55,6 @@ size_t				ft_strlcpy(char *dst, const char *src, size_t dstsize);
 size_t				ft_strlcat(char *dst, const char *src, size_t dstsize);
 char				**ft_split(char const *s, char c);
 void				*ft_memmove(void *dst, const void *src, size_t len);
+char				*ft_strncpy(char *dest, const char *src, size_t n);
 
 #endif

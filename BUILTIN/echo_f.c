@@ -1,8 +1,20 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   echo_f.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/22 22:44:34 by anamella          #+#    #+#             */
+/*   Updated: 2024/11/22 22:44:36 by anamella         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/minishell.h"
 
-static int check_arg(char *s)
+static int	check_arg(char *s)
 {
-	int i;
+	int	i;
 
 	i = 0;
 	while (s && s[i])
@@ -13,18 +25,20 @@ static int check_arg(char *s)
 	}
 	return (1 * (i != 0 && i >= 2));
 }
-void echo_f(char **args)
-{
-	int new_line;
-	int i;
 
+int	echo_f(char **args, t_mini *mini)
+{
+	int	new_line;
+	int	i;
+
+	(void)mini;
 	i = 0;
 	if (args == NULL)
 	{
 		printf("\n");
-		return;
+		return (0);
 	}
-	new_line = check_arg(args[0]); 
+	new_line = check_arg(args[0]);
 	i += new_line;
 	while (args[i])
 	{
@@ -35,4 +49,5 @@ void echo_f(char **args)
 	}
 	if (new_line == 0)
 		printf("\n");
+	return (0);
 }

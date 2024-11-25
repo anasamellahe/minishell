@@ -1,101 +1,152 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   wildcard.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/10/14 04:05:37 by marvin            #+#    #+#             */
+/*   Updated: 2024/11/23 17:13:58 by aderraj          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-bool    match_wildcards(char *filename, char **fragments)
-{
-    int i;
-    char *pos;
+void	recursive_match(t_wildcard *rules, char *curr_path, int seg_idx);
 
-    i = 0;
-    pos = filename;
-    if (!fragments[i])
-        return false;
-    while (fragments[i])
-    {
-        pos = ft_strnstr(pos, fragments[i], ft_strlen(pos));
-        if (!pos) 
-            return false;
-        pos += ft_strlen(fragments[i]);
-        i++;
-    }
-    return true;
+void	init_rules(t_wildcard *rules, t_expand *params)
+{
+	rules->params = params;
+	rules->start = rules->pattern;
+	rules->ptr = rules->pattern;
+	rules->num_segments = 0;
+	rules->skip_hidden = 1;
+	while (rules->ptr && *rules->ptr)
+	{
+		if (*rules->ptr == '/')
+		{
+			if (rules->ptr > rules->start)
+				rules->num_segments++;
+			rules->num_segments++;
+			rules->ptr++;
+			rules->start = rules->ptr;
+		}
+		else
+		{
+			if (*rules->ptr == '.' && rules->ptr == rules->pattern)
+				rules->skip_hidden = 0;
+			rules->ptr++;
+		}
+	}
+	if (rules->ptr > rules->start)
+		rules->num_segments++;
+	rules->segments = malloc(rules->num_segments * sizeof(char *));
 }
 
-void    match_patterns(t_expand *params, t_wildcard *specs)
+bool	ft_fnmatch(char *pattern, char *str)
 {
-    specs->fragments = ft_split(specs->pattern, '*');
-    if (specs->fragments)
-        specs->fragments[0] += ft_strlen(specs->current_dir) - 1;
-    while ((specs->entry = readdir(specs->dir)))
-    {
-        if (specs->entry->d_name[0] == '.')
-            continue;
-        specs->name_len = ft_strlen(specs->entry->d_name);
-        if (!specs->fragments)
-            add_match(params, specs);
-        else if (specs->entry->d_type == DT_DIR\
-        && specs->fragments && !ft_strncmp(specs->entry->d_name,\
-        specs->fragments[0], specs->name_len))
-            recursive_match(params, specs);
-        else if (match_wildcards(specs->entry->d_name, specs->fragments))
-            add_match(params, specs);
-    }
+	while (*pattern)
+	{
+		if (*pattern == '*')
+		{
+			if (!*(++pattern))
+				return (false);
+			while (*str)
+			{
+				if (ft_fnmatch(pattern, str) == false)
+					return (false);
+				str++;
+			}
+			return (true);
+		}
+		else
+		{
+			if (*pattern != *str)
+				return (true);
+			pattern++;
+			str++;
+		}
+	}
+	return (*str != 0);
 }
 
-void    recursive_match(t_expand *params, t_wildcard *specs)
+void	match_files(t_wildcard *rules, struct dirent *entry, char *curr_path,
+		int seg_idx)
 {
-    DIR *subdir;
-    t_wildcard sub_specs;
-    char subdir_path[254];
+	char	*tmp_path;
 
-    construct_path(specs, subdir_path);
-    subdir = opendir(subdir_path);
-    if (subdir)
-    {
-        specs->recursive_flag = 1;
-        sub_specs = *specs;
-        sub_specs.dir = subdir;
-        sub_specs.current_dir = subdir_path;
-        match_patterns(params, &sub_specs);
-        closedir(subdir);
-    }
+	tmp_path = ft_strjoin(curr_path, "/");
+	free(rules->next_path);
+	rules->next_path = ft_strjoin(tmp_path, entry->d_name);
+	rules->curr_path = curr_path;
+	free(tmp_path);
+	tmp_path = ft_strdup(rules->next_path);
+	if (rules->pattern[ft_strlen(rules->pattern) - 1] == '/')
+		rules->add_slash = 1;
+	if (ft_fnmatch(rules->segments[seg_idx], entry->d_name) == 0)
+	{
+		if (seg_idx == rules->num_segments - 1)
+			add_match(rules, rules->next_path);
+		else if (ft_strncmp(rules->segments[seg_idx + 1], "/", 2) == 0)
+		{
+			if (entry->d_type == DT_DIR)
+				recursive_match(rules, tmp_path, seg_idx + 2);
+		}
+		else
+			recursive_match(rules, rules->curr_path, seg_idx + 1);
+	}
+	(void)(free(tmp_path), free(curr_path));
+	free(rules->next_path);
+	rules->next_path = NULL;
 }
 
-void   fetsh_files(t_expand *params, t_wildcard *specs)
+// Function to recursively match patterns and traverse directories
+void	recursive_match(t_wildcard *rules, char *curr_path, int segm_idx)
 {
-    specs->current_dir = ".";
-    specs->dir = opendir(".");
-    if (!specs->dir)
-        return;
-    match_patterns(params, specs);
-    closedir(specs->dir);
-    free(specs->fragments);
+	struct dirent	*entry;
+	DIR				*dir;
+
+	if (segm_idx >= rules->num_segments)
+		return ((void)add_match(rules, curr_path));
+	dir = opendir(curr_path);
+	if (!dir)
+		return ;
+	entry = readdir(dir);
+	while (entry)
+	{
+		if (rules->skip_hidden && entry->d_name[0] == '.')
+		{
+			entry = readdir(dir);
+			continue ;
+		}
+		match_files(rules, entry, ft_strdup(curr_path), segm_idx);
+		entry = readdir(dir);
+	}
+	closedir(dir);
 }
 
-void expand_wildcards(t_expand *params, int quotes, int dquotes)
+void	expand_wildcards(t_expand *params, t_list *node)
 {
-    t_wildcard  specs;
+	t_wildcard	rules;
+	char		*cwd;
 
-    ft_memset(&specs, 0, sizeof(t_wildcard));
-    if (quotes || dquotes)
-    {
-        params->res = extend_string(params);
-        params->i++;
-        return;
-    }
-    specs.pattern = get_pattern(params->str, params->i);
-    fetsh_files(params, &specs);
-    if (specs.flag || specs.recursive_flag)
-    {
-        while(params->str[params->i] && !ft_isspace(params->str[params->i]))
-            params->i++;
-    }
-    else
-    {
-        params->res = extend_string(params);
-        params->i++;
-    }
-    free(specs.pattern);
-    return;
+	if (params->quotes_flags[0] || params->quotes_flags[1])
+	{
+		params->res = extend_string(params);
+		params->i++;
+		return ;
+	}
+	ft_bzero(&rules, sizeof(t_wildcard));
+	rules.node = node;
+	rules.pattern = get_pattern(params);
+	init_rules(&rules, params);
+	rules.ptr = rules.pattern;
+	rules.start = rules.pattern;
+	rules.idx = 0;
+	set_segments(&rules);
+	cwd = ft_strdup(".");
+	recursive_match(&rules, cwd, 0);
+	rules.params->idx_node = rules.node;
+	free(cwd);
+	final_touches(&rules);
 }

@@ -1,41 +1,119 @@
-
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   parser_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2024/11/18 22:41:03 by marvin            #+#    #+#             */
+/*   Updated: 2024/11/23 21:53:01 by aderraj          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-
-t_tree *create_ast_node(t_tree *parent, e_token type, u_token_data data)
+void	set_redirections(t_list *node, t_list *last_parenthesis)
 {
-    t_tree *new_node;
+	t_redir	*new_redir;
+	t_list	*to_free;
 
-    new_node = malloc(sizeof(t_tree));
-    if (!new_node)
-        return NULL; // Handle memory allocation failure
-
-    ft_bzero(new_node, sizeof(t_tree));
-    new_node->type = type;
-    new_node->data = data;
-    new_node->parent = parent;
-    return new_node;
+	if (node->type == REDIRIN || node->type == REDIROUT || node->type == APPEND
+		|| node->type == HEREDOC)
+	{
+		if (last_parenthesis)
+		{
+			new_redir = malloc(sizeof(t_redir));
+			if (!new_redir)
+				return ;
+			new_redir->mode = node->type;
+			new_redir->file = ft_strdup(node->next->s);
+			new_redir->next = last_parenthesis->data.redirections;
+			last_parenthesis->data.redirections = new_redir;
+			to_free = node->next;
+			node->next = node->next->next;
+			free(to_free->s);
+			free(to_free);
+		}
+	}
 }
 
-t_tree  *convert_to_tree(t_list *list)
+void	arrange_nodes(t_list *list[3], t_redir **redirections)
 {
-    t_list *tmp;
-    t_tree *root;
-
-    tmp = list;
-    root = NULL;
-    while (tmp)
-    {
-        if (tmp->type == AND || tmp->type == OR)
-            root = create_ast_node(NULL, tmp->type, tmp->data);
-        else if (tmp->type == PARENTHESIS)
-        {
-            tmp->data.sub_tree = convert_to_tree(tmp->sub_list);
-            create_ast_node(root,  PARENTHESIS, tmp->data);
-        }
-        tmp = tmp->next;
-    }
-    return (root);
+	if (list[0] && list[0]->type == WORD)
+	{
+		list[0] = get_redirections(list[1], list[0], redirections);
+		merge_words(list[0], *redirections);
+		redirections = NULL;
+	}
+	else if (list[0] && list[0]->type == PARENTHESIS)
+	{
+		list[0]->sub_list = lexer(list[0]->s);
+		parser(list[0]->sub_list);
+		list[2] = list[0];
+	}
+	else if (list[0]->type == PIPE || list[0]->type == AND
+		|| list[0]->type == OR)
+	{
+		list[1] = list[0]->next;
+		list[2] = NULL;
+	}
+	else
+		set_redirections(list[0], list[2]);
 }
 
+char	*construct_filename(t_wildcard *rules, char *s)
+{
+	char	*str;
+	char	*tmp;
+
+	if (!rules->skip_hidden)
+		str = ft_strdup(s + 2);
+	else
+		str = ft_strtrim(s, "./");
+	if (rules->add_slash && str)
+	{
+		tmp = ft_strjoin(str, "/");
+		free(str);
+		str = tmp;
+	}
+	return (str);
+}
+
+void	set_position(t_tree *stats[])
+{
+	if (stats[3])
+	{
+		stats[3]->right = stats[1];
+		stats[4]->left = stats[3];
+	}
+	else
+		stats[4]->left = stats[1];
+	stats[0] = stats[4];
+}
+
+void	sort_fnames(t_list *start, t_list *end)
+{
+	t_list	*ptr1;
+	t_list	*lptr;
+	int		swapped;
+
+	if (!start)
+		return ;
+	lptr = NULL;
+	swapped = 1;
+	while (swapped)
+	{
+		swapped = 0;
+		ptr1 = start;
+		while (ptr1->next != lptr && ptr1->next != end)
+		{
+			if (ft_strncmp(ptr1->s, ptr1->next->s, ft_strlen(ptr1->s) + 1) > 0)
+			{
+				swap_strings(ptr1, ptr1->next);
+				swapped = 1;
+			}
+			ptr1 = ptr1->next;
+		}
+		lptr = ptr1;
+	}
+}
