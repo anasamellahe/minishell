@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_free.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/24 08:59:22 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/25 02:15:23 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/27 22:23:32 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,20 @@ void	free_data(t_cmd *data)
 	}
 }
 
+void	flush_list(t_list *list)
+{
+	t_list	*tmp;
+
+	while (list)
+	{
+		tmp = list;
+		list = list->next;
+		ft_bzero(&tmp->data, sizeof(t_cmd));
+		flush_list(tmp->sub_list);
+		free(tmp->s);
+		free(tmp);
+	}
+}
 void	free_list(t_list *list)
 {
 	t_list	*tmp;
@@ -59,6 +73,7 @@ void	free_tree(t_tree *tree)
 {
 	if (!tree)
 		return ;
+	free_data(&tree->data);
 	free_tree(tree->sub_tree);
 	free_tree(tree->left);
 	free_tree(tree->right);

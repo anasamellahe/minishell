@@ -3,26 +3,32 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:05:20 by aderraj           #+#    #+#             */
-/*   Updated: 2024/11/24 00:33:52 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/29 02:58:45 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-t_list	*get_args(t_list *list, t_cmd *data, int size)
+t_list	*get_args(t_list *list, t_cmd *data, int size, t_env *env)
 {
 	int		i;
 	t_list	*tmp;
 
 	i = 1;
-	while (list && list->type == WORD)
+	while (list && list->type != PIPE && list->type != AND && list->type != OR
+		&& list->type != PARENTHESIS)
 	{
-		expand_rm_quotes(list, list->s);
-		if (list->s && data->args)
-			data->args = extend_array(data->args, list->s, i++, &size);
+		if (list->type == WORD)
+		{
+			expand_rm_quotes(list, list->s, env);
+			if (list->s && data->args)
+				data->args = extend_array(data->args, list->s, i++, &size);
+		}
+		if (list->data.ambigous_flag)
+			data->ambigous_flag = 1;
 		tmp = list;
 		list = list->next;
 		free(tmp->s);
@@ -31,12 +37,14 @@ t_list	*get_args(t_list *list, t_cmd *data, int size)
 	return (list);
 }
 
-void	merge_words(t_list *list, t_redir *redirs)
+void	merge_words(t_list *list, t_redir *redirs, t_env *env)
 {
 	int	size;
 
 	if (list->type == WORD)
-		expand_rm_quotes(list, list->s);
+		expand_rm_quotes(list, list->s, env);	
+	if (!*list->s && list->next)
+		list = list->next;
 	size = get_args_count(list);
 	if (size)
 	{
@@ -53,7 +61,7 @@ void	merge_words(t_list *list, t_redir *redirs)
 	}
 	list->data.redirections = redirs;
 	list->type = CMD;
-	list->next = get_args(list->next, &list->data, size);
+	list->next = get_args(list->next, &list->data, size, env);
 }
 
 t_list	*add_redir_node(t_redir **redirections, t_list *list)
@@ -67,6 +75,7 @@ t_list	*add_redir_node(t_redir **redirections, t_list *list)
 	new = malloc(sizeof(t_redir));
 	if (!new)
 		return (NULL);
+	new->ambiguous = list->next->ambiguous_flag;
 	new->mode = list->type;
 	new->next = NULL;
 	tmp = list->next->next;
@@ -78,7 +87,8 @@ t_list	*add_redir_node(t_redir **redirections, t_list *list)
 	return (tmp);
 }
 
-t_list	*get_redirections(t_list *list, t_list *current, t_redir **redirect)
+t_list	*get_redirections(t_list *list, t_list *current, t_redir **redirect,
+							t_env *env)
 {
 	t_list	*replace;
 
@@ -90,7 +100,7 @@ t_list	*get_redirections(t_list *list, t_list *current, t_redir **redirect)
 				|| list->type == APPEND || list->type == HEREDOC))
 		{
 			if (list->type != HEREDOC && list->next)
-				expand_rm_quotes(list->next, list->next->s);
+				expand_rm_quotes(list->next, list->next->s, env);
 			if (list->next == current)
 			{
 				replace = add_redir_node(redirect, list);
@@ -106,7 +116,7 @@ t_list	*get_redirections(t_list *list, t_list *current, t_redir **redirect)
 	return (replace);
 }
 
-void	parser(t_list *list)
+void	parser(t_list *list, t_env *env)
 {
 	t_list	*tmp[3];
 	t_redir	*redirections;
@@ -117,17 +127,18 @@ void	parser(t_list *list)
 	tmp[2] = NULL;
 	while (tmp[0])
 	{
-		arrange_nodes(tmp, &redirections);
+		arrange_nodes(tmp, &redirections, env);
 		if (tmp[0])
 			tmp[0] = tmp[0]->next;
 	}
 }
-/**
+// /**
 void	print_list(t_list *list)
 {
 	for (t_list *tmp = list; tmp; tmp = tmp->next)
 	{
 		printf("node -> {type = [%d], s = [%s]}\n", tmp->type, tmp->s);
+		printf("amibigious redirection == [%d]\n", tmp->data.ambigous_flag);
 		if (tmp->data.cmd)
 			printf("       data -> cmd = [%s]\n", tmp->data.cmd);
 		for (int i = 0; tmp->data.args && tmp->data.args[i]; i++)
@@ -207,7 +218,7 @@ void	print_ast(t_tree *node, int level)
 		print_ast(node->right, level + 1);
 	}
 }
-
+/** 
 int	main(void)
 {
 	char	*buf;

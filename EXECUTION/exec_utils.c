@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:37 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/25 01:39:43 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/28 19:46:20 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,13 @@
 int	execute_command(t_tree *root, t_mini *mini)
 {
 	int		status;
-	int		cmd_exit_status;
 	pid_t	pid;
 
+	signal(SIGINT, SIG_IGN);
 	if (check_redirection(root, mini) == 1)
 		return (EXIT_FAILURE);
-	if (check_builtin(root, mini, &cmd_exit_status) == 1)
-		return (cmd_exit_status);
+	if (check_builtin(root, mini, &status) == 1)
+		return (status);
 	pid = fork();
 	if (pid == 0)
 	{
@@ -32,10 +32,7 @@ int	execute_command(t_tree *root, t_mini *mini)
 			error_msg(root->data.cmd, mini, 127);
 	}
 	else if (pid > 0)
-	{
-		waitpid(pid, &status, 0);
-		return (WEXITSTATUS(status));
-	}
+		return (get_exit_status(pid));
 	else
 		error_msg("fork failed", mini, EXIT_FAILURE);
 	return (0);
@@ -46,6 +43,7 @@ int	execute_and(t_tree *root, t_mini *mini)
 	int	status_left;
 
 	status_left = execute_ast(root->left, mini);
+	reset_fd(mini->infd, mini->outfd);
 	if (status_left == 0)
 		return (execute_ast(root->right, mini));
 	else
@@ -57,6 +55,7 @@ int	execute_or(t_tree *root, t_mini *mini)
 	int	status_left;
 
 	status_left = execute_ast(root->left, mini);
+	reset_fd(mini->infd, mini->outfd);
 	if (status_left != 0)
 		return (execute_ast(root->right, mini));
 	else
@@ -65,10 +64,11 @@ int	execute_or(t_tree *root, t_mini *mini)
 
 int	execute_parenthesis(t_tree *root, t_mini *mini)
 {
-	int	status;
 	int	pid;
+	int	status;
 
 	status = 0;
+	signal(SIGINT, SIG_IGN);
 	pid = fork();
 	if (pid == 0)
 	{
@@ -76,10 +76,10 @@ int	execute_parenthesis(t_tree *root, t_mini *mini)
 		exit(status);
 	}
 	else if (pid > 0)
-		waitpid(pid, &status, 0);
+		return (get_exit_status(pid));
 	else
 		error_msg("fork failed", mini, EXIT_FAILURE);
-	return (WEXITSTATUS(status));
+	return (status);
 }
 
 int	execute_pipe(t_tree *node, t_mini *mini)
@@ -88,6 +88,7 @@ int	execute_pipe(t_tree *node, t_mini *mini)
 	pid_t	pid_left;
 	pid_t	pid_right;
 
+	signal(SIGINT, SIG_IGN);
 	create_pipe(pipefd, mini);
 	pid_left = fork();
 	if (pid_left == 0)

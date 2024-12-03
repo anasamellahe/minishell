@@ -6,30 +6,42 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:42 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/24 00:47:01 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/30 22:43:58 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
+void	write_to_heredoc(char *line, int fd)
+{
+	ft_putstr_fd(line, fd);
+	ft_putchar_fd('\n', fd);
+	free(line);
+}
+
 int	heredoc(const char *delimiter, t_mini *mini)
 {
 	int		fd[2];
 	char	*line;
+	int		pid;
 
 	create_pipe(fd, mini);
-	while (1)
+	signal(SIGINT, SIG_IGN);
+	pid = fork();
+	if (pid == 0)
 	{
-		line = readline("> ");
-		if (!line || strcmp(line, delimiter) == 0)
+		signal(SIGINT, SIG_DFL);
+		while (1)
 		{
-			free(line);
-			break ;
+			line = readline("> ");
+			if (!line || strcmp(line, delimiter) == 0)
+				free_heredoc(line, mini);
+			line = expand_in_heredoc(line);
+			write_to_heredoc(line, fd[1]);
 		}
-		write(fd[1], line, strlen(line));
-		write(fd[1], "\n", 1);
-		free(line);
 	}
+	else if (pid > 0)
+		mini->exit = get_exit_status(pid);
 	return (close(fd[1]), fd[0]);
 }
 
@@ -68,6 +80,6 @@ int	execute_ast(t_tree *root, t_mini *mini)
 	else if (root->type == OR)
 		return (execute_or(root, mini));
 	if (root->type == PARENTHESIS)
-		execute_parenthesis(root, mini);
+		return (execute_parenthesis(root, mini));
 	return (0);
 }

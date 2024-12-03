@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 07:15:04 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/23 21:51:34 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/11/29 01:21:35 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ bool	innormal_var(t_expand *params)
 	}
 	if (params->str[params->i + 1] == '?')
 	{
-		expand_exit_status(params);
+		expand_exit_status(params, g_global_exit);
 		return (true);
 	}
 	return (false);

@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:14 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/24 20:59:20 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/28 17:28:19 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,13 +35,11 @@ static char	*ft_strndup(char *str, int size)
 	return (s);
 }
 
-char	*get_val(char *s, int *status)
+char	*get_val(char *s)
 {
 	int	i;
 
 	i = 0;
-	if (status && *status == 1)
-		return (NULL);
 	while (s && s[i])
 	{
 		if (s[i] == '=')
@@ -51,25 +49,14 @@ char	*get_val(char *s, int *status)
 	return (NULL);
 }
 
-char	*get_var(char *s, int *status)
+char	*get_var(char *s)
 {
 	int	i;
 
 	i = 0;
 	while (s && s[i])
 	{
-		if (ft_isspace(s[i]) || (s[i] == '=' && i == 0))
-		{
-			if (status && *status == 0)
-			{
-				ft_putstr_fd("export: ", 2);
-				ft_putstr_fd(&s[i], 2);
-				ft_putstr_fd(": not a valid identifier\n", 2);
-				*status = 1;
-			}
-			return (NULL);
-		}
-		if (s[i] == '=')
+		if (s[i] == '=' && i > 0)
 			return (ft_strndup(s, i));
 		i++;
 	}
@@ -93,13 +80,9 @@ int	set_env(char *var, char *val, t_env **env)
 			if (tmp->val)
 				free(tmp->val);
 			tmp->val = val;
-			return (0);
+			return (1);
 		}
 		tmp = tmp->next;
 	}
-	if (val)
-		free(val);
-	if (var)
-		free(var);
-	return (1);
+	return (0);
 }

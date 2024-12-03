@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/14 04:05:37 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/23 17:13:58 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/11/29 02:52:42 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,6 +134,14 @@ void	expand_wildcards(t_expand *params, t_list *node)
 	{
 		params->res = extend_string(params);
 		params->i++;
+		return ;
+	}
+	else if (node->prev && (node->prev->type == REDIRIN || node->prev->type == REDIROUT
+		|| node->prev->type == APPEND || node->prev->type == HEREDOC))
+	{
+		params->res = extend_string(params);
+		params->i++;
+		node->ambiguous_flag = true;
 		return ;
 	}
 	ft_bzero(&rules, sizeof(t_wildcard));

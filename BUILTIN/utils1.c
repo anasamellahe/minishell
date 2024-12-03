@@ -6,37 +6,26 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:19 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/24 20:53:13 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/30 19:38:40 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../includes/minishell.h"
 
-static t_env	*start_env(void)
-{
-	t_env	*env;
-	char	*pwd;
-
-	pwd = ft_strjoin("PWD=", getcwd(NULL, 0));
-	env = malloc(sizeof(t_env));
-	if (!env)
-		return (NULL);
-	add_env(&env, new_env(pwd, (int *)0));
-	return (env);
-}
-
 t_env	*create_env(char **env)
 {
 	int		i;
 	t_env	*env_l;
+	char	*var;
+	char	*val;
 
 	i = 0;
 	env_l = NULL;
-	if (!env)
-		return (start_env());
-	while (env[i])
+	while (env && env[i])
 	{
-		add_env(&env_l, new_env(env[i], (int *)0));
+		var = get_var(env[i]);
+		val = get_val(env[i]);
+		add_env(&env_l, new_env(var, val));
 		i++;
 	}
 	return (env_l);

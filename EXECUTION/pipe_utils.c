@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:47 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/23 00:43:54 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/26 18:04:14 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ int	end_of_pipe(pid_t pid_left, pid_t pid_right, int *pipefd)
 
 	close(pipefd[0]);
 	close(pipefd[1]);
-	waitpid(pid_left, &status, 0);
-	waitpid(pid_right, &status, 0);
-	return (WEXITSTATUS(status));
+	status = get_exit_status(pid_left);
+	status = get_exit_status(pid_right);
+	return (status);
 }
 
 int	close_fd(int fd1, int fd2)

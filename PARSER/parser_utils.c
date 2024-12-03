@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/18 22:41:03 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/23 21:53:01 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/11/29 02:41:26 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,18 +37,18 @@ void	set_redirections(t_list *node, t_list *last_parenthesis)
 	}
 }
 
-void	arrange_nodes(t_list *list[3], t_redir **redirections)
+void	arrange_nodes(t_list *list[3], t_redir **redirections, t_env *env)
 {
 	if (list[0] && list[0]->type == WORD)
 	{
-		list[0] = get_redirections(list[1], list[0], redirections);
-		merge_words(list[0], *redirections);
-		redirections = NULL;
+		list[0] = get_redirections(list[1], list[0], redirections, env);
+		merge_words(list[0], *redirections, env);
+		*redirections = NULL;
 	}
 	else if (list[0] && list[0]->type == PARENTHESIS)
 	{
 		list[0]->sub_list = lexer(list[0]->s);
-		parser(list[0]->sub_list);
+		parser(list[0]->sub_list, env);
 		list[2] = list[0];
 	}
 	else if (list[0]->type == PIPE || list[0]->type == AND

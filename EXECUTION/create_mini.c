@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/24 18:25:29 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/25 02:02:23 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/30 22:50:40 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,6 @@ t_mini	*create_mini(char **env)
 void	free_mini(t_mini *mini)
 {
 	free_env(mini->env);
-	if (mini->list)
-	{
-		free_list(mini->list);
-		mini->list = NULL;
-	}
 	if (mini->root)
 	{
 		free_tree(mini->root);
@@ -64,7 +59,6 @@ void	free_mini(t_mini *mini)
 void	free_and_reset(t_mini *mini)
 {
 	reset_fd(mini->infd, mini->outfd);
-	free_list(mini->list);
 	free_tree(mini->root);
 	free_char_env(mini->char_env);
 	mini->list = NULL;

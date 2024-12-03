@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 07:21:23 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/23 20:08:26 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/11/29 02:01:49 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,10 @@ int	get_args_count(t_list *list)
 
 	i = 0;
 	tmp = list;
-	while (tmp && tmp->type == WORD)
+	while (tmp && tmp->type != PIPE && tmp->type != AND && tmp->type != OR
+		&& tmp->type != PARENTHESIS)
 	{
-		if (tmp->s)
+		if (tmp->s && tmp->type == WORD)
 			i++;
 		tmp = tmp->next;
 	}

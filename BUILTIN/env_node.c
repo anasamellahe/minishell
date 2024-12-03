@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:44:47 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/23 23:21:23 by anamella         ###   ########.fr       */
+/*   Updated: 2024/11/28 17:21:22 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ int	add_env(t_env **env, t_env *new_env)
 	return (0);
 }
 
-t_env	*new_env(char *s, int *status)
+t_env	*new_env(char *var, char *val)
 {
 	t_env	*env;
 
@@ -40,18 +40,9 @@ t_env	*new_env(char *s, int *status)
 		ft_putstr_fd("Error: malloc failed\n", 2);
 		return (NULL);
 	}
-	env->var = get_var(s, status);
-	env->val = get_val(s, status);
+	env->var = var;
+	env->val = val;
 	env->next = NULL;
-	if (env->var == NULL)
-	{
-		if (env->var)
-			free(env->var);
-		if (env->val)
-			free(env->val);
-		free(env);
-		return (NULL);
-	}
 	return (env);
 }
 
