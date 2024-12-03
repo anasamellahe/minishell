@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/09 03:13:26 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/27 04:33:46 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/11/29 17:27:08 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,8 @@ void	parse_parenthesis(t_list **list, char *s, int *i)
 		j++;
 	}
 	add_node(list, new_node(ft_substr(&s[1], 0, j - 1), PARENTHESIS));
+	if (s[j] != ')')
+		j--;
 	*i += j + 1;
 }
 
@@ -60,7 +62,7 @@ void	parse_words(t_list **list, char *s, int *i)
 	j = 0;
 	while (s[j] && !ft_isspace(s[j]) && !is_operator(s[j]))
 	{
-		if (s[j] == '&' && s[j + 1] && s[j + 1] == '&')
+		if (s[j] == '(' || (s[j] == '&' && s[j + 1] && s[j + 1] == '&'))
 			break ;
 		if (s[j] == '"' || s[j] == '\'')
 			parse_quotes(&s[j], &j);

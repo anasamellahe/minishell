@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/24 08:59:22 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/27 22:23:32 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/03 01:32:36 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ void	free_data(t_cmd *data)
 	i = 0;
 	if (data->cmd)
 	{
-		free (data->cmd);
+		free(data->cmd);
 		data->cmd = NULL;
 	}
 	while (data->args && data->args[i])
@@ -54,6 +54,7 @@ void	flush_list(t_list *list)
 		free(tmp);
 	}
 }
+
 void	free_list(t_list *list)
 {
 	t_list	*tmp;

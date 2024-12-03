@@ -17,7 +17,7 @@
  *	vars[1]: start;
  *	vars[2]: current array_size;
  *	vars[3]: current array_idx;
-*/
+ */
 
 char	**add_word(char **words, char *s, int *vars)
 {

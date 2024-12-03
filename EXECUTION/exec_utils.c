@@ -5,8 +5,8 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 22:45:37 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/28 19:46:20 by anamella         ###   ########.fr       */
+/*   Created: 2024/12/03 18:46:44 by anamella          #+#    #+#             */
+/*   Updated: 2024/12/03 19:17:19 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@ int	execute_command(t_tree *root, t_mini *mini)
 	signal(SIGINT, SIG_IGN);
 	if (check_redirection(root, mini) == 1)
 		return (EXIT_FAILURE);
+	check_delayed_expansion(root, mini->env);
 	if (check_builtin(root, mini, &status) == 1)
 		return (status);
 	pid = fork();
@@ -44,6 +45,7 @@ int	execute_and(t_tree *root, t_mini *mini)
 
 	status_left = execute_ast(root->left, mini);
 	reset_fd(mini->infd, mini->outfd);
+	g_global_exit = status_left;
 	if (status_left == 0)
 		return (execute_ast(root->right, mini));
 	else
@@ -56,6 +58,7 @@ int	execute_or(t_tree *root, t_mini *mini)
 
 	status_left = execute_ast(root->left, mini);
 	reset_fd(mini->infd, mini->outfd);
+	g_global_exit = status_left;
 	if (status_left != 0)
 		return (execute_ast(root->right, mini));
 	else
@@ -69,6 +72,7 @@ int	execute_parenthesis(t_tree *root, t_mini *mini)
 
 	status = 0;
 	signal(SIGINT, SIG_IGN);
+	check_redirection(root, mini);
 	pid = fork();
 	if (pid == 0)
 	{

@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/23 02:23:35 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/30 22:49:41 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/03 19:15:31 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ int	convert_and_execute(t_mini *mini)
 	if (read_heredoc(mini->root, mini) == 1)
 		return (g_global_exit = mini->exit, 1);
 	g_global_exit = execute_ast(mini->root, mini);
-	// free_and_reset(mini);
+	free_and_reset(mini);
 	return (0);
 }
 
@@ -51,14 +51,14 @@ void	get_input(t_mini *mini)
 			break ;
 		add_history(input);
 		mini->list = lexer(input);
-		free(input);
-		if (check_syntax_errors(mini->list))
+		if (check_syntax_errors(mini->list, input))
 		{
+			free(input);
 			free_list(mini->list);
-			clear_history();
 			mini->list = NULL;
 			continue ;
 		}
+		free(input);
 		convert_and_execute(mini);
 		free_and_reset(mini);
 	}
@@ -68,15 +68,15 @@ void	get_input(t_mini *mini)
 int	main(int ac, char **av, char **ev)
 {
 	t_mini	*mini;
-	int		exit_statu;
+	int		exit_status;
 
 	(void)ac;
 	(void)av;
 	signal(SIGQUIT, SIG_IGN);
 	mini = create_mini(ev);
 	get_input(mini);
-	exit_statu = mini->exit;
+	exit_status = mini->exit;
 	free_mini(mini);
-	exit(exit_statu);
+	exit(exit_status);
 	return (0);
 }

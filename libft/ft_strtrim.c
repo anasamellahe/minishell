@@ -14,10 +14,10 @@
 
 char	*ft_strtrim(char const *s1, char const *set)
 {
-	int		i;
-	int		j;
-	int		t;
-	int		arr[256];
+	int	i;
+	int	j;
+	int	t;
+	int	arr[256];
 
 	if (!s1)
 		return (NULL);

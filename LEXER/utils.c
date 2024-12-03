@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/15 07:15:04 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/29 01:21:35 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/03 05:59:26 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,16 @@ int	is_operator(char c)
 int	ft_isspace(char c)
 {
 	return (c == ' ' || (c <= 13 && c >= 9));
+}
+
+int	get_array_len(char **array)
+{
+	int	i;
+
+	i = 0;
+	while (array[i])
+		i++;
+	return (i);
 }
 
 void	append_redirection(t_redir **redirection, t_redir *new)
@@ -37,18 +47,31 @@ void	append_redirection(t_redir **redirection, t_redir *new)
 		*redirection = new;
 }
 
-bool	innormal_var(t_expand *params)
+bool	innormal_var(t_expand *params, t_list *node)
 {
+	t_list	*tmp;
+
+	tmp = node;
+	if (!node)
+		return (true);
+	if (node->prev)
+	{
+		while (tmp && !params->quotes_flags[1])
+		{
+			if (tmp->type == OR || tmp->type == AND)
+				node->data.delayed_expand_flag++;
+			tmp = tmp->prev;
+		}
+	}
+	if (node->data.delayed_expand_flag)
+	{
+		if (params->quotes_flags[0] && node->data.delayed_expand_flag < 2)
+			params->res = append_value(params, "\"");
+		return ((void)(params->res = extend_string(params), params->i++), true);
+	}
 	if (params->quotes_flags[1] || !params->str[params->i + 1])
-	{
-		params->res = extend_string(params);
-		params->i++;
-		return (true);
-	}
+		return ((void)(params->res = extend_string(params), params->i++), true);
 	if (params->str[params->i + 1] == '?')
-	{
-		expand_exit_status(params, g_global_exit);
-		return (true);
-	}
+		return (expand_exit_status(params, g_global_exit), true);
 	return (false);
 }

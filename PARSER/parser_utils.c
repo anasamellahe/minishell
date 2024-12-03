@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/18 22:41:03 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/29 02:41:26 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/03 05:04:52 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,31 @@ void	set_redirections(t_list *node, t_list *last_parenthesis)
 	}
 }
 
+void	set_lonely_redirections(t_list *list[3], t_redir **redirections,
+		t_env *env)
+{
+	t_list	*dummy_cmd;
+
+	if ((!list[0]->prev || list[0]->prev->type != WORD) && (!list[0]->next
+			|| list[0]->next->type != WORD))
+	{
+		dummy_cmd = new_node(NULL, CMD);
+		if (!dummy_cmd)
+			return ;
+		dummy_cmd->next = list[0];
+		if (list[0])
+			list[0]->prev = dummy_cmd;
+		list[0] = dummy_cmd;
+	}
+	if (list[0]->next && (!list[0]->next->next
+			|| list[0]->next->next->type != WORD))
+	{
+		list[0] = get_redirections(list[1], list[0], redirections, env);
+		merge_words(list[0], *redirections, env);
+		*redirections = NULL;
+	}
+}
+
 void	arrange_nodes(t_list *list[3], t_redir **redirections, t_env *env)
 {
 	if (list[0] && list[0]->type == WORD)
@@ -51,12 +76,16 @@ void	arrange_nodes(t_list *list[3], t_redir **redirections, t_env *env)
 		parser(list[0]->sub_list, env);
 		list[2] = list[0];
 	}
-	else if (list[0]->type == PIPE || list[0]->type == AND
-		|| list[0]->type == OR)
+	else if (list[0] && (list[0]->type == PIPE || list[0]->type == AND
+			|| list[0]->type == OR))
 	{
 		list[1] = list[0]->next;
 		list[2] = NULL;
 	}
+	else if (list[0] && (!list[0]->prev || list[0]->prev->type != PARENTHESIS)
+		&& (list[0]->type == REDIRIN || list[0]->type == REDIROUT
+			|| list[0]->type == APPEND || list[0]->type == HEREDOC))
+		set_lonely_redirections(list, redirections, env);
 	else
 		set_redirections(list[0], list[2]);
 }
@@ -89,31 +118,4 @@ void	set_position(t_tree *stats[])
 	else
 		stats[4]->left = stats[1];
 	stats[0] = stats[4];
-}
-
-void	sort_fnames(t_list *start, t_list *end)
-{
-	t_list	*ptr1;
-	t_list	*lptr;
-	int		swapped;
-
-	if (!start)
-		return ;
-	lptr = NULL;
-	swapped = 1;
-	while (swapped)
-	{
-		swapped = 0;
-		ptr1 = start;
-		while (ptr1->next != lptr && ptr1->next != end)
-		{
-			if (ft_strncmp(ptr1->s, ptr1->next->s, ft_strlen(ptr1->s) + 1) > 0)
-			{
-				swap_strings(ptr1, ptr1->next);
-				swapped = 1;
-			}
-			ptr1 = ptr1->next;
-		}
-		lptr = ptr1;
-	}
 }

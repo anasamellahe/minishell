@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/17 07:54:21 by marvin            #+#    #+#             */
-/*   Updated: 2024/11/26 21:39:10 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/03 05:16:48 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,11 @@
  * 4 : tmp to store new_nodes
  */
 
-#define ROOT stats[0]
-#define CURRENT_CMD stats[1]
-#define LAST_OP stats[2]
-#define LAST_PIPE stats[3]
-#define TMP stats[4]
+// #define ROOT stats[0]
+// #define CURRENT_CMD stats[1]
+// #define LAST_OP stats[2]
+// #define LAST_PIPE stats[3]
+// #define TMP stats[4]
 
 t_tree	*new_tree_node(t_list *list, t_token type, t_cmd data)
 {
@@ -52,70 +52,70 @@ void	insert_pipe(t_cmd data, t_tree *stats[])
 	int	flag;
 
 	flag = 0;
-	TMP = new_tree_node(NULL, PIPE, data);
-	if (!ROOT)
-		TMP->left = CURRENT_CMD;
-	else if (LAST_OP)
+	stats[4] = new_tree_node(NULL, PIPE, data);
+	if (!stats[0])
+		stats[4]->left = stats[1];
+	else if (stats[2])
 	{
-		LAST_OP->right = TMP;
-		TMP->left = CURRENT_CMD;
-		LAST_OP = NULL;
+		stats[2]->right = stats[4];
+		stats[4]->left = stats[1];
+		stats[2] = NULL;
 		flag = 1;
 	}
 	else
 	{
-		if (LAST_PIPE)
-			LAST_PIPE->right = CURRENT_CMD;
+		if (stats[3])
+			stats[3]->right = stats[1];
 		else
-			ROOT->right = CURRENT_CMD;
-		TMP->left = ROOT;
+			stats[0]->right = stats[1];
+		stats[4]->left = stats[0];
 	}
 	if (!flag)
-		ROOT = TMP;
-	LAST_PIPE = TMP;
-	CURRENT_CMD = NULL;
+		stats[0] = stats[4];
+	stats[3] = stats[4];
+	stats[1] = NULL;
 }
 
 void	insert_logical_op(t_list *node, t_tree *stats[])
 {
-	TMP = new_tree_node(node, node->type, node->data);
-	if (!ROOT)
+	stats[4] = new_tree_node(node, node->type, node->data);
+	if (!stats[0])
 		set_position(stats);
-	else if (LAST_PIPE)
+	else if (stats[3])
 	{
-		LAST_PIPE->right = CURRENT_CMD;
-		TMP->left = ROOT;
-		LAST_PIPE = NULL;
+		stats[3]->right = stats[1];
+		stats[4]->left = stats[0];
+		stats[3] = NULL;
 	}
-	else if (LAST_OP)
+	else if (stats[2])
 	{
-		LAST_OP->right = CURRENT_CMD;
-		TMP->left = ROOT;
+		stats[2]->right = stats[1];
+		stats[4]->left = stats[0];
 	}
 	else
 	{
-		ROOT->right = CURRENT_CMD;
-		TMP->left = ROOT;
+		stats[0]->right = stats[1];
+		stats[4]->left = stats[0];
 	}
-	ROOT = TMP;
-	LAST_OP = TMP;
-	CURRENT_CMD = NULL;
+	stats[0] = stats[4];
+	stats[2] = stats[4];
+	stats[1] = NULL;
 }
 
 t_tree	*set_root_node(t_tree *stats[])
 {
-	if (CURRENT_CMD && LAST_OP)
-		LAST_OP->right = CURRENT_CMD;
-	else if (CURRENT_CMD && ROOT)
+	if (stats[1] && stats[2])
+		stats[2]->right = stats[1];
+	else if (stats[1] && stats[0])
 	{
-		if (LAST_PIPE)
-			LAST_PIPE->right = CURRENT_CMD;
+		if (stats[3])
+			stats[3]->right = stats[1];
 		else
-			ROOT->right = CURRENT_CMD;
+			stats[0]->right = stats[1];
 	}
-	else if (CURRENT_CMD && !ROOT)
-		ROOT = CURRENT_CMD;
-	return (ROOT);
+	else if (stats[1] && !stats[0])
+		stats[0] = stats[1];
+	return (stats[0]);
 }
 
 t_tree	*convert_to_ast(t_list *list)
@@ -126,16 +126,16 @@ t_tree	*convert_to_ast(t_list *list)
 	while (list && list->s)
 	{
 		if (list->type == CMD)
-			CURRENT_CMD = new_tree_node(list, CMD, list->data);
+			stats[1] = new_tree_node(list, CMD, list->data);
 		else if (list->type == PIPE)
 			insert_pipe(list->data, stats);
 		else if (list->type == AND || list->type == OR)
 			insert_logical_op(list, stats);
 		else if (list->type == PARENTHESIS)
 		{
-			TMP = new_tree_node(list, PARENTHESIS, list->data);
-			TMP->sub_tree = convert_to_ast(list->sub_list);
-			CURRENT_CMD = TMP;
+			stats[4] = new_tree_node(list, PARENTHESIS, list->data);
+			stats[4]->sub_tree = convert_to_ast(list->sub_list);
+			stats[1] = stats[4];
 		}
 		list = list->next;
 	}
