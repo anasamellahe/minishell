@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser_utils2.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 05:01:32 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/03 22:00:34 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/03 22:52:10 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,27 +61,26 @@ void	sort_fnames(t_list *start, t_list *end)
 
 void	remove_heredeoc_quotes(t_list *list)
 {
-	int		i;
-	int		size;
-	char	*tmp;
+	t_expand	params;
 
 	if (list->type == HEREDOC && list->next)
 	{
 		if (!list->next->s)
 			return ;
-		i = 0;
-		size = 0;
-		if (*list->next->s != '\'' && *list->next->s != '"')
-			size++;
-		while (list->next->s[i])
-			i++;
-		size = i;
-		if (list->next->s[i - 1] == '\'' || list->next->s[i - 1] == '"')
-			size--;
-		tmp = list->next->s;
-		list->next->s = ft_substr(list->next->s, (*list->next->s == '\''
-					|| *list->next->s == '"') + 0, size - 1);
-		free(tmp);
+		ft_bzero(&params, sizeof(t_expand));
+		params.str = list->next->s;
+		while (params.str && params.str[params.i])
+		{
+			if (params.str[params.i] == '\'' || params.str[params.i] == '"')
+				set_quotes_flags(&params);
+			else
+			{
+				params.res = extend_string(&params);
+				params.i++;
+			}
+		}
+		free(list->next->s);
+		list->next->s = params.res;
 	}
 }
 

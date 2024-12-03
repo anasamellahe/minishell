@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 19:52:14 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/03 18:57:21 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 00:42:02 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,8 +190,9 @@ void				merge_words(t_list *list, t_redir *redirs, t_env *env);
 void				arrange_nodes(t_list *list[3], t_redir **redirections,
 						t_env *env);
 int					get_array_len(char **array);
-
+void				set_quotes_flags(t_expand *params);
 char				*str_cut(char *str, int idx);
+
 /*-- EXPANDER FUNCTIONS --*/
 
 void				expand_rm_quotes(t_list *node, char *s, t_env *mini);
@@ -277,7 +278,7 @@ char				**count_env(t_env *env);
 void				create_char_env(char **ev, t_env *env);
 char				**convert_env(t_env *env);
 void				free_char_env(char **env);
-int					heredoc(const char *delimiter, t_mini *mini);
+int					heredoc(char *delimiter, t_mini *mini);
 int					execute_ast(t_tree *root, t_mini *mini);
 void				child_process1(t_tree *root, int *pipefd, t_mini *mini);
 void				child_process2(t_tree *root, int *pipefd, t_mini *mini);

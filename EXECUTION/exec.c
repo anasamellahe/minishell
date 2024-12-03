@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/03 18:45:52 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/03 20:10:21 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 00:46:03 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void	write_to_heredoc(char *line, int fd)
 	free(line);
 }
 
-int	heredoc(const char *delimiter, t_mini *mini)
+int	heredoc(char *delimiter, t_mini *mini)
 {
 	int		fd[2];
 	char	*line;
@@ -34,7 +34,10 @@ int	heredoc(const char *delimiter, t_mini *mini)
 		while (1)
 		{
 			line = readline("> ");
-			if (!line || strcmp(line, delimiter) == 0)
+			if (!line)
+				(void)(ft_putstr_fd("warning: here-document delimited by EOF\n",
+						2), free_heredoc(line, mini));
+			if (ft_strcmp(line, delimiter) == 0)
 				free_heredoc(line, mini);
 			line = expand_in_heredoc(line);
 			write_to_heredoc(line, fd[1]);

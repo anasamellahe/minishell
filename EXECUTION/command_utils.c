@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   command_utils.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:26 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/03 18:52:58 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 00:29:00 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,8 @@ int	join_command(t_tree *root, t_env **env, int *status)
 
 	if (root->data.cmd == NULL)
 		return (*status = 1, 1);
+	if (!*root->data.cmd)
+		return (cmd_error(root->data.cmd), *status = 127, 1);
 	if (check_path(root->data.cmd, status))
 		return (*status);
 	path = ft_split(get_env("PATH", *env), ':');

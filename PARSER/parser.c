@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:05:20 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/03 22:06:48 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 00:41:39 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,6 @@ void	merge_words(t_list *list, t_redir *redirs, t_env *env)
 
 	if (list->type == WORD)
 		expand_rm_quotes(list, list->s, env);
-	if (list->s && !*list->s && list->next)
-		list = list->next;
 	size = get_args_count(list);
 	if (size)
 	{
@@ -170,7 +168,7 @@ void	print_ast(t_tree *node, int level)
 	switch (node->type)
 	{
 	case CMD:
-		printf("CMD: %s\n", node->data.cmd);
+		printf("CMD: [%s]\n", node->data.cmd);
 		printf("delayed flag = [%d]\n", node->data.delayed_expand_flag);
 		if (node->data.cmd && node->data.args)
 		{
@@ -220,7 +218,6 @@ void	print_ast(t_tree *node, int level)
 		print_ast(node->right, level + 1);
 	}
 }
-
 int	main(void)
 {
 	char	*buf;
