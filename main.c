@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
+/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/23 02:23:35 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/04 00:31:28 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/04 20:25:09 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,23 @@ int	convert_and_execute(t_mini *mini)
 	mini->list = NULL;
 	mini->char_env = convert_env(mini->env);
 	if (read_heredoc(mini->root, mini) == 1)
+	{
+		free_heredoc_fd(mini->root);
 		return (g_global_exit = mini->exit, 1);
+	}
 	g_global_exit = execute_ast(mini->root, mini);
-	free_and_reset(mini);
+	free_heredoc_fd(mini->root);
 	return (0);
+}
+
+void	print_banner(void)
+{
+	printf(BLUE" __  __ ___ _   _ ___ ____  _   _ _____ _     _     \n");
+	printf("|  \\/  |_ _| \\ | |_ _/ ___|| | | | ____| |   | |    \n");
+	printf("| |\\/| || ||  \\| || |\\___ \\| |_| |  _| | |   | |    \n");
+	printf("| |  | || || |\\  || | ___) |  _  | |___| |___| |___ \n");
+	printf("|_|  |_|___|_| \\_|___|____/|_| |_|_____|_____|_____|\n"RESET);
+	printf(YELLOW"	    by: aderraj && anamella					\n\n"RESET);
 }
 
 void	get_input(t_mini *mini)
@@ -46,7 +59,7 @@ void	get_input(t_mini *mini)
 	{
 		signal(SIGINT, sig_hand);
 		mini->exit = 0;
-		input = readline(BLUE "mminishell$ " RESET);
+		input = readline(BLUE "minishell$ " RESET);
 		if (!input)
 			break ;
 		add_history(input);
@@ -59,6 +72,8 @@ void	get_input(t_mini *mini)
 			continue ;
 		}
 		free(input);
+		mini->infd = dup(0);
+		mini->outfd = dup(1);
 		convert_and_execute(mini);
 		free_and_reset(mini);
 	}
@@ -73,6 +88,7 @@ int	main(int ac, char **av, char **ev)
 	(void)ac;
 	(void)av;
 	signal(SIGQUIT, SIG_IGN);
+	print_banner();
 	mini = create_mini(ev);
 	get_input(mini);
 	exit_status = mini->exit;

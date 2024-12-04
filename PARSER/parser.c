@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   parser.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:05:20 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/04 00:41:39 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 01:57:05 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,26 +41,30 @@ t_list	*get_args(t_list *list, t_cmd *data, int size, t_env *env)
 
 void	merge_words(t_list *list, t_redir *redirs, t_env *env)
 {
-	int	size;
+	int		size;
+	char	*tmp;
 
+	tmp = ft_strdup(list->s);
 	if (list->type == WORD)
 		expand_rm_quotes(list, list->s, env);
+	if (tmp && !ft_strchr(tmp, '"') && !ft_strchr(tmp, '"')
+		&& ft_strchr(tmp, '$') && !*list->s && list->next)
+		list = list->next;
 	size = get_args_count(list);
 	if (size)
 	{
 		list->data.args = ft_calloc(size + 1, sizeof(char *));
 		if (!list->data.args)
-			return ;
+			return ((void)(free(tmp)));
 	}
 	if (list->s && size)
 	{
 		list->data.cmd = ft_strdup(list->s);
 		list->data.args[0] = ft_strdup(list->data.cmd);
 		if (!list->data.cmd)
-			return ;
+			return ((void)(free(tmp)));
 	}
-	list->data.redirections = redirs;
-	list->type = CMD;
+	(void)(free(tmp), list->data.redirections = redirs, list->type = CMD);
 	list->next = get_args(list->next, &list->data, size, env);
 }
 
@@ -133,106 +137,3 @@ void	parser(t_list *list, t_env *env)
 			tmp[0] = tmp[0]->next;
 	}
 }
-/*
-void	print_list(t_list *list)
-{
-	for (t_list *tmp = list; tmp; tmp = tmp->next)
-	{
-		printf("node -> {type = [%d], s = [%s]}\n", tmp->type, tmp->s);
-		if (tmp->data.cmd)
-			printf("       data -> cmd = [%s]\n", tmp->data.cmd);
-		for (int i = 0; tmp->data.args && tmp->data.args[i]; i++)
-			printf("       data -> cmd.args = [%s]\n", tmp->data.args[i]);
-		for (t_redir *tmp2 = tmp->data.redirections; tmp2; tmp2 = tmp2->next)
-			printf("       data\
-				-> cmd.redirections = {mode = [%d],file = [%s]}\n",
-					tmp2->mode,
-					tmp2->file);
-		if (tmp->sub_list)
-		{
-			printf(GREEN "---SUB_list\n" RESET);
-			print_list(tmp->sub_list);
-			printf(GREEN "---END OF SUB_list\n" RESET);
-		}
-	}
-}
-void	print_ast(t_tree *node, int level)
-{
-	if (!node)
-		return ;
-	// Print indentation based on the level of the node in the tree
-	for (int i = 0; i < level; i++)
-	{
-		printf("    ");
-	}
-	switch (node->type)
-	{
-	case CMD:
-		printf("CMD: [%s]\n", node->data.cmd);
-		printf("delayed flag = [%d]\n", node->data.delayed_expand_flag);
-		if (node->data.cmd && node->data.args)
-		{
-			printf(" args: ");
-			for (int i = 0; node->data.args[i]; i++)
-				printf("[%s] ", node->data.args[i]);
-		}
-		if (node->data.redirections)
-		{
-			for (t_redir *tmp2 = node->data.redirections; tmp2; tmp2 = tmp2->next)
-				printf(" redirections = {mode = [%d], file = [%s]\n",
-					tmp2->mode, tmp2->file);
-		}
-		printf("\n");
-		break ;
-	case PIPE:
-		printf("PIPE\n");
-		break ;
-	case AND:
-		printf("AND\n");
-		break ;
-	case OR:
-		printf("OR\n");
-		break ;
-	case PARENTHESIS:
-		printf("PARENTHESIS\n");
-		printf("SUB tree inside parentheses: \n");
-		// Print the sub-tree inside the parentheses
-		print_ast(node->sub_tree, level + 1);
-		printf("END OF SUB tree inside parentheses:\n");
-		for (t_redir *tmp2 = node->data.redirections; tmp2; tmp2 = tmp2->next)
-			printf(" redirections = {mode = [%d], file = [%s]\n", tmp2->mode,
-				tmp2->file);
-		return ;
-	default:
-		printf("Unknown node type\n");
-	}
-	// Recursively print left and right children
-	if (node->left)
-	{
-		printf(GREEN "  left level = %d\n" RESET, level);
-		print_ast(node->left, level + 1);
-	}
-	if (node->right)
-	{
-		printf(GREEN "  right level = %d\n" RESET, level);
-		print_ast(node->right, level + 1);
-	}
-}
-int	main(void)
-{
-	char	*buf;
-	t_list	*list;
-	t_tree	*root;
-
-	buf = readline(BLUE "$$:" RESET);
-	list = lexer(buf);
-	parser(list);
-	// print_list(list);
-	root = convert_to_ast(list);
-	print_ast(root, 0);
-	free_list(list);
-	free_tree(root);
-	free(buf);
-	return (0);
-}
-*/

@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/24 18:25:29 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/03 18:53:43 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 20:21:12 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,18 +24,8 @@ t_mini	*create_mini(char **env)
 	mini->list = NULL;
 	mini->root = NULL;
 	mini->exit = 0;
-	mini->infd = dup(0);
-	if (mini->infd == -1)
-	{
-		free_mini(mini);
-		error_msg("dup failed", NULL, EXIT_FAILURE);
-	}
-	mini->outfd = dup(1);
-	if (mini->outfd == -1)
-	{
-		free_mini(mini);
-		error_msg("dup failed", NULL, EXIT_FAILURE);
-	}
+	mini->infd = -1;
+	mini->outfd = -1;
 	return (mini);
 }
 

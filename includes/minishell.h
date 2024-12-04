@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 19:52:14 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/04 00:42:02 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 20:26:06 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -290,6 +290,7 @@ void				reset_fd(int fd_in, int fd_out);
 void				sig_hand(int sig);
 int					get_exit_status(int pid);
 void				free_heredoc(char *line, t_mini *mini);
+void				free_heredoc_fd(t_tree *root);
 
 /*************************/
 

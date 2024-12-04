@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 23:29:53 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/03 06:08:34 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/04 01:43:35 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,9 @@ void	report_error(char *token, int flag)
 		ft_putstr_fd(" ambigious redirection `", 2);
 		ft_putstr_fd(token, 2);
 	}
-	if (flag >= 0)
+	else if (flag == 2)
+		ft_putstr_fd(" maximum here-document count exceeded\n", 2);
+	if (flag >= 0 && flag != 2)
 		ft_putstr_fd("'\n", 2);
 }
 
@@ -72,9 +74,15 @@ bool	check_parenthesis(t_list *node)
 
 bool	check_redirections(t_list *node)
 {
+	static int	n_heredocs;
+
 	if (node->type == REDIRIN || node->type == REDIROUT || node->type == APPEND
 		|| node->type == HEREDOC)
 	{
+		if (node->type == HEREDOC)
+			n_heredocs++;
+		if (n_heredocs >= 17)
+			return (report_error(NULL, 2), true);
 		if (!node->next)
 			return (report_error("newline", 0), true);
 		else if (node->next->type != WORD && node->next->type != PARENTHESIS)

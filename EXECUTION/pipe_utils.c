@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:47 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/26 18:04:14 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 20:28:03 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,4 +43,24 @@ int	close_fd(int fd1, int fd2)
 	if (fd2 != -1)
 		close(fd2);
 	return (0);
+}
+
+void	free_heredoc_fd(t_tree *root)
+{
+	t_redir	*red;
+
+	if (root == NULL)
+		return ;
+	red = root->data.redirections;
+	while (red)
+	{
+		if (red->mode == HEREDOC && red->fd != -1)
+		{
+			close(red->fd);
+			red->fd = -1;
+		}
+		red = red->next;
+	}
+	free_heredoc_fd(root->left);
+	free_heredoc_fd(root->right);
 }

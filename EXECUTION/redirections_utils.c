@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:50 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/29 17:53:46 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 20:21:29 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,9 @@ int	check_redirection(t_tree *root, t_mini *mini)
 int	read_heredoc(t_tree *root, t_mini *mini)
 {
 	t_redir	*red;
+	int		tmp_fd;
 
+	tmp_fd = 0;
 	if (root == NULL)
 		return (0);
 	red = root->data.redirections;
@@ -94,4 +96,6 @@ void	reset_fd(int fd_in, int fd_out)
 {
 	dup2(fd_in, 0);
 	dup2(fd_out, 1);
+	close(fd_in);
+	close(fd_out);
 }
