@@ -45,10 +45,11 @@ Minishell is a simple implementation of a Unix shell, built to provide a deeper 
 ## Installation and Usage  
 1. **Clone the repository**:  
    ```bash  
-   git clone <repository-url>  
+   git clone https://github.com/anasamellahe/minishell.git
    cd minishell
    make
-   ./minishell  
+   ./minishell
+   ```
 ---
 ## Requirements
 - Language: C
