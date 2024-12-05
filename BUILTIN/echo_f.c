@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:44:34 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/22 22:44:36 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/05 18:03:20 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,19 +35,19 @@ int	echo_f(char **args, t_mini *mini)
 	i = 0;
 	if (args == NULL)
 	{
-		printf("\n");
+		ft_putstr_fd("\n", 1);
 		return (0);
 	}
 	new_line = check_arg(args[0]);
 	i += new_line;
 	while (args[i])
 	{
-		printf("%s", args[i]);
+		ft_putstr_fd(args[i], 1);
 		if (args[i + 1])
-			printf(" ");
+			ft_putstr_fd(" ", 1);
 		i++;
 	}
 	if (new_line == 0)
-		printf("\n");
+		ft_putstr_fd("\n", 1);
 	return (0);
 }

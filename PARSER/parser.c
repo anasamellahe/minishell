@@ -6,7 +6,7 @@
 /*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/08/16 20:05:20 by aderraj           #+#    #+#             */
-/*   Updated: 2024/12/04 01:57:05 by aderraj          ###   ########.fr       */
+/*   Updated: 2024/12/04 21:40:05 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,6 +87,8 @@ t_list	*add_redir_node(t_redir **redirections, t_list *list)
 	free(list->next->s);
 	free(list->next);
 	list->next = tmp;
+	if (tmp)
+		list->next->prev = list;
 	append_redirection(redirections, new);
 	return (tmp);
 }

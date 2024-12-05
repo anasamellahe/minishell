@@ -6,7 +6,7 @@
 /*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:45:50 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/04 20:21:29 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 22:38:31 by anamella         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ int	redirections_type(t_redir *redirections, t_mini *mini)
 	fd = -1;
 	if (redirections->ambiguous == true)
 	{
-		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd("minishell: '", 2);
 		ft_putstr_fd(redirections->file, 2);
-		ft_putstr_fd("ambiguous redirect\n", 2);
+		ft_putstr_fd("' ambiguous redirect\n", 2);
 		return (-1);
 	}
 	if (redirections->mode == APPEND)
@@ -75,9 +75,7 @@ int	check_redirection(t_tree *root, t_mini *mini)
 int	read_heredoc(t_tree *root, t_mini *mini)
 {
 	t_redir	*red;
-	int		tmp_fd;
 
-	tmp_fd = 0;
 	if (root == NULL)
 		return (0);
 	red = root->data.redirections;

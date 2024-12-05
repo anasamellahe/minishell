@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exit_f.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 22:44:52 by anamella          #+#    #+#             */
-/*   Updated: 2024/11/29 17:22:25 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/05 00:05:12 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ int	count_args(char **args)
 	int	i;
 
 	i = 0;
-	while (args[i])
+	while (args && args[i])
 		i++;
 	return (i);
 }
@@ -86,8 +86,9 @@ int	check_arg(char *s)
 
 int	get_exit(char *s, t_mini *mini)
 {
+	(void)mini;
 	if (s == NULL)
-		return (mini->exit);
+		return (g_global_exit);
 	if (check_arg(s))
 	{
 		ft_putstr_fd("exit: ", 2);
@@ -104,9 +105,11 @@ int	exit_f(char **args, t_mini *mini)
 	int	count;
 	int	status;
 
+	status = g_global_exit;
 	count = count_args(args);
-	printf("%s\n", "exit");
-	status = get_exit(args[0], mini);
+	ft_putstr_fd("exit\n", 2);
+	if (args)
+		status = get_exit(args[0], mini);
 	if (count > 1)
 	{
 		ft_putstr_fd("minishell: exit: too many arguments\n", 2);

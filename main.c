@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: anamella <anamella@student.1337.ma>        +#+  +:+       +#+        */
+/*   By: aderraj <aderraj@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/23 02:23:35 by anamella          #+#    #+#             */
-/*   Updated: 2024/12/04 20:25:09 by anamella         ###   ########.fr       */
+/*   Updated: 2024/12/04 23:46:57 by aderraj          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,16 @@ void	sig_hand(int sig)
 	rl_replace_line("", 0);
 	rl_redisplay();
 	g_global_exit = 130;
+}
+
+void	print_banner(void)
+{
+	printf(BLUE" __  __ ___ _   _ ___ ____  _   _ _____ _     _     \n");
+	printf("|  \\/  |_ _| \\ | |_ _/ ___|| | | | ____| |   | |    \n");
+	printf("| |\\/| || ||  \\| || |\\___ \\| |_| |  _| | |   | |    \n");
+	printf("| |  | || || |\\  || | ___) |  _  | |___| |___| |___ \n");
+	printf("|_|  |_|___|_| \\_|___|____/|_| |_|_____|_____|_____|\n"RESET);
+	printf(YELLOW"	    by: aderraj && anamella					\n\n"RESET);
 }
 
 int	convert_and_execute(t_mini *mini)
@@ -41,16 +51,6 @@ int	convert_and_execute(t_mini *mini)
 	return (0);
 }
 
-void	print_banner(void)
-{
-	printf(BLUE" __  __ ___ _   _ ___ ____  _   _ _____ _     _     \n");
-	printf("|  \\/  |_ _| \\ | |_ _/ ___|| | | | ____| |   | |    \n");
-	printf("| |\\/| || ||  \\| || |\\___ \\| |_| |  _| | |   | |    \n");
-	printf("| |  | || || |\\  || | ___) |  _  | |___| |___| |___ \n");
-	printf("|_|  |_|___|_| \\_|___|____/|_| |_|_____|_____|_____|\n"RESET);
-	printf(YELLOW"	    by: aderraj && anamella					\n\n"RESET);
-}
-
 void	get_input(t_mini *mini)
 {
 	char	*input;
@@ -61,7 +61,7 @@ void	get_input(t_mini *mini)
 		mini->exit = 0;
 		input = readline(BLUE "minishell$ " RESET);
 		if (!input)
-			break ;
+			exit_f(NULL, mini);
 		add_history(input);
 		mini->list = lexer(input);
 		if (check_syntax_errors(mini->list, input))
@@ -88,7 +88,6 @@ int	main(int ac, char **av, char **ev)
 	(void)ac;
 	(void)av;
 	signal(SIGQUIT, SIG_IGN);
-	print_banner();
 	mini = create_mini(ev);
 	get_input(mini);
 	exit_status = mini->exit;
